@@ -502,7 +502,7 @@ Player = function(x, y, width, height, drawWidth, drawHeight, src){
 						ctx.save();
 						ctx.fillStyle = "white";
 						ctx.font = "30px arial";
-						ctx.fillText("You win", WIDTH/2 - 68, HEIGHT/2 - 14.5);
+						ctx.fillText("You win!", WIDTH/2 - 68, HEIGHT/2 - 14.5);
 						ctx.restore();					
 						if(!rotating){	
 							setInterval(rotate, 25);
