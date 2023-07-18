@@ -1,0 +1,174 @@
+<html>
+	<head>
+		<title>Game</title>
+		<meta charset="utf-8" />
+		<style type="text/css">
+			#canvas{
+				border:1px solid #000000;
+				margin:5px;
+				position: absolute;
+				left: 50%;
+				top: 50%; 
+				margin-top: -300px; 
+				margin-left: -300px;
+			}
+		</style>		
+	</head>
+	<body>
+		<canvas id="canvas" height="600px" width="600px"></canvas>
+		<script type="text/javascript" src="GlobalVariables.js"></script>
+		<script type="text/javascript" src="Entities.js"></script>
+		<script type="text/javascript" src="Grids.js"></script>
+		<p id="hello"><p>
+	</body>
+	<script type="text/javascript">
+		ctx.mozImageSmoothingEnabled = false;
+		ctx.msImageSmoothingEnabled = false;
+		ctx.imageSmoothingEnabled = false;	
+
+		MapCreate();		
+
+		function win(){								
+				for(var key in FlagPole.list){
+					if(((Player.list.x >= FlagPole.list[key].x && Player.list.x  <= FlagPole.list[key].x + FlagPole.list[key].width || Player.list.x + Player.list.width >= FlagPole.list[key].x && Player.list.x  + Player.list.width <= FlagPole.list[key].x + FlagPole.list[key].width) || (Player.list.x <= FlagPole.list[key].x && Player.list.x + Player.list.width >= FlagPole.list[key].x + FlagPole.list[key].width)) && (Player.list.y >= FlagPole.bigger && Player.list.y + Player.list.height <= FlagPole.less || Player.list.y + Player.list.height >= FlagPole.bigger && Player.list.y + Player.list.height <= FlagPole.less)){
+							if(Player.list.x > FlagPole.list[key].x + FlagPole.list[key].width/2 && Player.list.slidingOnFlagPole){
+								Player.list.position = "img/left-";
+								while(Player.list.x < FlagPole.list[key].x + FlagPole.list[key].width){
+									Player.list.x++;
+									Player.list.drawx++;									
+								}								
+							}else if(Player.list.slidingOnFlagPole){
+								while(Player.list.x + Player.list.width > FlagPole.list[key].x){									
+									Player.list.x--;
+									Player.list.drawx--;									
+								}
+								Player.list.position = "img/right-";
+							}
+							Player.list.slidingOnFlagPole = true;
+							Player.list.win = true;
+							return true;
+					}
+				}		
+		}
+		reset = function(){
+			if(life != 0){
+				if(Player.list.colisionEnemy() || Player.list.colisionBoundDown() || Reset){
+					DeleteEntities();
+					MapCreate();
+					if(!Reset){
+						life--;
+					}
+					Reset = false;
+				}
+			}else{ 
+				GameOver = true;
+			}
+		}
+		document.onkeydown = function(e){
+			if(e.keyCode == 68){	//d
+				Player.list.pressRight = true;
+			}else if(e.keyCode == 65){	//a
+				Player.list.pressLeft = true;
+			}else if(e.keyCode == 83){ //s
+				Player.list.pressDown = true;				
+			}else if(e.keyCode == 87){ // w
+				Player.list.pressUp = true;
+			}else if(e.keyCode == 32){ // space
+				if(Player.list.jumpAgain && !Player.list.flying()){
+					Player.list.pressSpace = true;
+					Player.list.jumpAgain = false;
+				}
+			}else if(e.keyCode == 16){ //shift
+				Player.list.pressShift = true;
+			}				
+		}	
+		document.onkeyup = function(e){
+			if(e.keyCode == 68){	//d
+				Player.list.pressRight = false;
+			}else if(e.keyCode == 65){	//a
+				Player.list.pressLeft = false;
+			}else if(e.keyCode == 83){ //s
+				Player.list.pressDown = false;				
+			}else if(e.keyCode == 87){ // w
+				Player.list.pressUp = false;
+			}else if(e.keyCode == 32){ // space
+				Player.list.jumpAgain = true;
+				Player.list.pressSpace = false;
+			}else if(e.keyCode == 16){ //shift
+				Player.list.pressShift = false;
+			}				
+		}
+		function rotate(){
+			if(j != 4 && condition){
+				if(j < m){
+					j++;
+					canvas.style = "transform: rotate(" + j + "deg);";
+				}else{
+					if(!l && j != 4){
+						j = 0
+						m = 4; 
+						l = true;
+						canvas.style = "transform: rotate(" + j + "deg);";
+					}
+				}			
+			}else{
+				condition = false;
+				m = 0;
+				k = false;
+			}
+			if(j != 356 && !condition){
+				if(j > n){
+					j--;	
+					canvas.style = "transform: rotate(" + j + "deg);";
+				}else{
+					if(!k){
+						j = 360; 
+						m = 356;
+						k = true;
+						canvas.style = "transform: rotate(" + j + "deg);";
+					}
+				}		
+			}else{
+				condition = true;
+				m = 360;
+				l = false;
+			}
+		}
+		loop = function(){
+			if(!GameOver){				
+				ctx.clearRect(0, 0, HEIGHT, WIDTH);
+				win();
+				Map.list.update();	
+				Cannon.UpdateCannons();
+				Power.UpdatePowers();
+				Fire.UpdateFires();
+				Blocks.UpdateBlocks();
+				Enemy.UpdateEnemies();
+				Player.list.update();	
+				ctx.save();
+				ctx.fillStyle = "white";	
+				ctx.font = "20px arial";
+				ctx.fillText("lifes: " + life, 4, 20);				
+				ctx.restore();				
+				ctx.save();
+				ctx.fillStyle = "white";	
+				ctx.font = "20px arial";
+				ctx.fillText("golds: " + gold, 80, 20);				
+				ctx.restore();
+				if(gold > 99){
+					gold = 0;
+					life++;
+				}
+				reset();
+			}else{
+				ctx.clearRect(0, 0, HEIGHT, WIDTH);
+				ctx.fillStyle = "black";
+				ctx.font = "30px arial";
+				ctx.fillRect(0, 0, HEIGHT, WIDTH);	
+				ctx.fillStyle = "white";	
+				ctx.fillText("Game Over", WIDTH/2 - 102, HEIGHT/2 - 14.5);		
+			}
+		}
+		setInterval(loop, 6);
+	</script>
+</html>
